@@ -1,6 +1,6 @@
 # Repsy Assignment Project
 
-A mid-level Java project built with Spring Boot and Hibernate for package management.
+Java project built with Spring Boot and Hibernate for package management.
 
 ## Technology Stack
 - Java 17
