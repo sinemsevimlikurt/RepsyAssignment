@@ -20,7 +20,7 @@ The project follows a layered architecture with the following packages:
 - [x] Initial project setup
 - [x] Entity models creation
 - [x] Repository interfaces
-- [ ] Service layer implementation
+- [x] Service layer implementation
 - [ ] REST controllers
 - [ ] Unit tests
 - [ ] Integration tests
