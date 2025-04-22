@@ -3,12 +3,12 @@ package com.repsy.assignment.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.repsy.assignment.dto.ApiResponse;
 import com.repsy.assignment.model.Package;
+import com.repsy.assignment.model.PackageMeta;
 import com.repsy.assignment.model.PackageVersion;
 import com.repsy.assignment.service.PackageService;
 import com.repsy.assignment.service.PackageVersionService;
 import com.repsy.assignment.storage.StorageStrategy;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -29,48 +29,60 @@ public class DeploymentController {
     private final ObjectMapper objectMapper;
 
     /**
-     * Deploy a package version with its metadata
+     * Deploy a package file (package.rep or meta.json)
      */
-    @PostMapping(value = "/{packageName}/{version}", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<ApiResponse<PackageVersion>> deployPackage(
+    @PostMapping("/{packageName}/{version}")
+    public ResponseEntity<ApiResponse<String>> deployPackage(
             @PathVariable String packageName,
             @PathVariable String version,
-            @RequestParam("package.rep") MultipartFile packageFile,
-            @RequestParam("meta.json") MultipartFile metaFile) {
+            @RequestParam("file") MultipartFile file) {
         
         try {
-            // Validate file extensions
-            if (!packageFile.getOriginalFilename().endsWith(".rep")) {
+            // Validate file name
+            String fileName = file.getOriginalFilename();
+            if (fileName == null || (!fileName.equals("package.rep") && !fileName.equals("meta.json"))) {
+                return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Invalid file name. Must be 'package.rep' or 'meta.json'"));
+            }
+            
+            // If it's meta.json, validate its content
+            if (fileName.equals("meta.json")) {
+                PackageMeta meta = objectMapper.readValue(file.getBytes(), PackageMeta.class);
+                
+                // Validate metadata matches URL parameters
+                if (!meta.getName().equals(packageName) || !meta.getVersion().equals(version)) {
+                    return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("Package name and version in meta.json must match URL parameters"));
+                }
+                
+                // Create or update package and version in database
+                if (!packageService.packageExists(packageName)) {
+                    packageService.createPackage(packageName);
+                }
+                
+                if (!versionService.versionExists(packageService.getPackageByName(packageName).getId(), version)) {
+                    versionService.createVersion(
+                        packageService.getPackageByName(packageName).getId(),
+                        version,
+                        meta.getAuthor()
+                    );
+                }
+            }
+            
+            // Validate package.rep extension
+            if (fileName.equals("package.rep") && !file.getOriginalFilename().endsWith(".rep")) {
                 return ResponseEntity.badRequest()
                         .body(ApiResponse.error("Package file must have .rep extension"));
             }
-
-            if (!metaFile.getOriginalFilename().endsWith(".json")) {
-                return ResponseEntity.badRequest()
-                        .body(ApiResponse.error("Metadata file must have .json extension"));
-            }
-
-            // Store files
-            storageStrategy.store(packageName, version, "package.rep", packageFile.getInputStream());
-            storageStrategy.store(packageName, version, "meta.json", metaFile.getInputStream());
-
-            // Create or get package
-            Package pkg = packageService.getPackageByName(packageName);
-            if (pkg == null) {
-                pkg = packageService.createPackage(packageName);
-            }
-
-            // Create version
-            PackageVersion packageVersion = versionService.createVersion(pkg.getId(), version, "system");
-
-            return ResponseEntity.ok(ApiResponse.success(packageVersion));
+            
+            // Store the file
+            String storagePath = storageStrategy.store(packageName, version, fileName, file);
+            
+            return ResponseEntity.ok(ApiResponse.success(storagePath));
             
         } catch (IOException e) {
-            return ResponseEntity.badRequest()
-                    .body(ApiResponse.error("Failed to process uploaded files: " + e.getMessage()));
-        } catch (Exception e) {
             return ResponseEntity.internalServerError()
-                    .body(ApiResponse.error("Internal server error: " + e.getMessage()));
+                    .body(ApiResponse.error("Failed to process file: " + e.getMessage()));
         }
     }
 }

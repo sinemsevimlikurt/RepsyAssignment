@@ -1,45 +1,49 @@
 package com.repsy.assignment.storage;
 
-import java.io.InputStream;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
 
 /**
- * Interface for different storage strategies (file-system or object-storage)
+ * Interface for implementing different storage strategies
  */
 public interface StorageStrategy {
     
     /**
-     * Store a file
+     * Store a file in the storage system
      * @param packageName Package name
-     * @param version Version string
+     * @param version Package version
      * @param fileName File name (package.rep or meta.json)
-     * @param inputStream File content stream
-     * @return Storage path or identifier
+     * @param file File content
+     * @return Storage path
+     * @throws IOException If storage operation fails
      */
-    String store(String packageName, String version, String fileName, InputStream inputStream);
+    String store(String packageName, String version, String fileName, MultipartFile file) throws IOException;
     
     /**
-     * Retrieve a file
+     * Retrieve a file from the storage system
      * @param packageName Package name
-     * @param version Version string
-     * @param fileName File name (package.rep or meta.json)
-     * @return File content stream
+     * @param version Package version
+     * @param fileName File name to retrieve
+     * @return File content as byte array
+     * @throws IOException If retrieval operation fails
      */
-    InputStream retrieve(String packageName, String version, String fileName);
+    byte[] retrieve(String packageName, String version, String fileName) throws IOException;
     
     /**
-     * Delete a file
+     * Check if a file exists in storage
      * @param packageName Package name
-     * @param version Version string
-     * @param fileName File name (package.rep or meta.json)
-     */
-    void delete(String packageName, String version, String fileName);
-    
-    /**
-     * Check if a file exists
-     * @param packageName Package name
-     * @param version Version string
-     * @param fileName File name (package.rep or meta.json)
-     * @return true if exists
+     * @param version Package version
+     * @param fileName File name to check
+     * @return true if file exists
      */
     boolean exists(String packageName, String version, String fileName);
+    
+    /**
+     * Delete a file from storage
+     * @param packageName Package name
+     * @param version Package version
+     * @param fileName File name to delete
+     * @throws IOException If deletion operation fails
+     */
+    void delete(String packageName, String version, String fileName) throws IOException;
 }

@@ -2,13 +2,14 @@ package com.repsy.assignment.controller;
 
 import com.repsy.assignment.storage.StorageStrategy;
 import lombok.RequiredArgsConstructor;
-import org.springframework.core.io.InputStreamResource;
+import org.springframework.core.io.ByteArrayResource;
+import org.springframework.core.io.Resource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.io.InputStream;
+import java.io.IOException;
 
 /**
  * Controller for package download operations
@@ -24,32 +25,37 @@ public class DownloadController {
      * Download a package file
      */
     @GetMapping("/{packageName}/{version}/{fileName}")
-    public ResponseEntity<InputStreamResource> downloadFile(
+    public ResponseEntity<Resource> downloadPackage(
             @PathVariable String packageName,
             @PathVariable String version,
             @PathVariable String fileName) {
         
         try {
+            // Validate file name
+            if (!fileName.equals("package.rep") && !fileName.equals("meta.json")) {
+                return ResponseEntity.badRequest().build();
+            }
+            
             // Check if file exists
             if (!storageStrategy.exists(packageName, version, fileName)) {
                 return ResponseEntity.notFound().build();
             }
-
+            
             // Get file content
-            InputStream fileContent = storageStrategy.retrieve(packageName, version, fileName);
-            InputStreamResource resource = new InputStreamResource(fileContent);
-
-            // Set content type based on file extension
-            MediaType contentType = fileName.endsWith(".json") 
-                    ? MediaType.APPLICATION_JSON 
-                    : MediaType.APPLICATION_OCTET_STREAM;
-
+            byte[] content = storageStrategy.retrieve(packageName, version, fileName);
+            ByteArrayResource resource = new ByteArrayResource(content);
+            
+            // Set content type
+            MediaType contentType = fileName.equals("meta.json") 
+                ? MediaType.APPLICATION_JSON 
+                : MediaType.APPLICATION_OCTET_STREAM;
+            
             return ResponseEntity.ok()
                     .contentType(contentType)
                     .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileName + "\"")
                     .body(resource);
-                    
-        } catch (Exception e) {
+            
+        } catch (IOException e) {
             return ResponseEntity.internalServerError().build();
         }
     }
