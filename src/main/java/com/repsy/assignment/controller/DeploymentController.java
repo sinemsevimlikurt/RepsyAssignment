@@ -49,6 +49,15 @@ public class DeploymentController {
             if (fileName.equals("meta.json")) {
                 PackageMeta meta = objectMapper.readValue(file.getBytes(), PackageMeta.class);
                 
+                // Zorunlu alanları kontrol et
+                if (meta.getName() == null || meta.getName().isBlank() ||
+                    meta.getVersion() == null || meta.getVersion().isBlank() ||
+                    meta.getAuthor() == null || meta.getAuthor().isBlank() ||
+                    meta.getDependencies() == null || meta.getDependencies().isEmpty()) {
+                    return ResponseEntity.badRequest()
+                        .body(ApiResponse.error("meta.json must contain non-empty name, version, author and dependencies fields"));
+                }
+                
                 // Validate metadata matches URL parameters
                 if (!meta.getName().equals(packageName) || !meta.getVersion().equals(version)) {
                     return ResponseEntity.badRequest()
