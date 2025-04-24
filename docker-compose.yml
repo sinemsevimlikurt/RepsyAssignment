@@ -1,0 +1,45 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    environment:
+      POSTGRES_DB: repsy
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  minio:
+    image: minio/minio
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    command: server /data --console-address ":9001"
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - miniodata:/data
+
+  repsy-app:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - storageStrategy=minio
+      - minio.url=http://minio:9000
+      - minio.access-key=minioadmin
+      - minio.secret-key=minioadmin
+      - minio.bucket=repsy-bucket
+      - spring.datasource.url=jdbc:postgresql://postgres:5432/repsy
+      - spring.datasource.username=postgres
+      - spring.datasource.password=postgres
+    depends_on:
+      - postgres
+      - minio
+
+volumes:
+  pgdata:
+  miniodata:
