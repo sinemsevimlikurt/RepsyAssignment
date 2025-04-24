@@ -33,12 +33,16 @@ public class DownloadController {
         try {
             // Validate file name
             if (!fileName.equals("package.rep") && !fileName.equals("meta.json")) {
-                return ResponseEntity.badRequest().build();
+                return ResponseEntity.badRequest()
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .body(new ByteArrayResource("Invalid file name. Only 'package.rep' or 'meta.json' is allowed.".getBytes()));
             }
             
             // Check if file exists
             if (!storageStrategy.exists(packageName, version, fileName)) {
-                return ResponseEntity.notFound().build();
+                return ResponseEntity.status(404)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .body(new ByteArrayResource(("File not found: " + fileName).getBytes()));
             }
             
             // Get file content
@@ -56,7 +60,9 @@ public class DownloadController {
                     .body(resource);
             
         } catch (IOException e) {
-            return ResponseEntity.internalServerError().build();
+            return ResponseEntity.status(500)
+                .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                .body(new ByteArrayResource(("Failed to download file: " + e.getMessage()).getBytes()));
         }
     }
 }
