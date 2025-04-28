@@ -1,10 +1,10 @@
-package com.repsy.assignment;
+package com.repsy.repsy_repo_api;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 @SpringBootTest
-class AssignmentApplicationTests {
+class RepsyRepoApiApplicationTests {
 
 	@Test
 	void contextLoads() {

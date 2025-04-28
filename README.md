@@ -1,119 +1,78 @@
-# Repsy Assignment Project
+# RepsyAssignment
 
-A minimal software package repository system for the fictional Repsy programming language. Built with Java 17, Spring Boot, PostgreSQL, and supports both file-system and MinIO object storage backends.
+## Overview
+
+RepsyAssignment is a Java-based project designed to demonstrate key backend development skills, including RESTful API design, configuration management, and containerization. The project is structured for clarity and maintainability, making it suitable for both learning and production use.
 
 ## Features
-- Upload (`deployment`) and download endpoints for `.rep` and `meta.json` files
-- File-system and MinIO (object storage) strategies, switchable via configuration
-- Package metadata and version tracking in PostgreSQL
-- Modular Maven structure for storage strategies
-- Robust validation and error handling
-- Dockerized for easy deployment
 
-## Technology Stack
+- RESTful API endpoints
+- Configuration management with `application.properties`
+- Docker and Docker Compose support
+- Maven-based dependency management
+- Environment variable support for flexible deployments
+
+## Technologies Used
+
 - Java 17
 - Spring Boot 3.x
-- Hibernate/JPA
+- Spring Data JPA
 - PostgreSQL
-- MinIO (object storage)
-- Maven (multi-module)
+- MinIO (optional for object storage)
+- Maven
 - Docker
+- Docker Compose
 
-## Project Structure
-- `storage-common` — Shared storage interface
-- `storage-filesystem` — File-system storage implementation
-- `storage-minio` — MinIO storage implementation
-- `src/main/java/com.repsy.assignment` — Main Spring Boot app, REST endpoints, business logic, models
+## Getting Started
 
-## Quick Start
+### Prerequisites
 
-### 1. PostgreSQL ve MinIO Kurulumu
+- Java 17 or higher
+- Maven 3.6+
+- Docker (optional, for containerization)
 
-#### PostgreSQL (örnek Docker komutu):
-```sh
-docker run --name repsy-postgres -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=repsy -p 5432:5432 -d postgres:15
+### Clone the Repository
+
+```bash
+git clone https://github.com/yourusername/RepsyAssignment.git
+cd RepsyAssignment
 ```
 
-#### MinIO (örnek Docker komutu):
-```sh
-docker run -p 9000:9000 -p 9001:9001 \
-  -e MINIO_ROOT_USER=minioadmin \
-  -e MINIO_ROOT_PASSWORD=minioadmin \
-  -v ~/minio/data:/data \
-  minio/minio server /data --console-address ":9001"
+### Build the Project
+
+```bash
+mvn clean package
 ```
 
-MinIO web arayüzünden bir bucket oluşturun (ör: `repsy-bucket`).
+## Configuration
 
-### 2. Uygulama Konfigürasyonu
-`src/main/resources/application.properties` dosyasındaki ayarları kendi ortamınıza göre düzenleyin:
-```properties
-# storageStrategy=file-system
-# storage.filesystem.root=/tmp/repsy-storage
+Application configuration is managed via the `src/main/resources/application.properties` file. You can override properties using environment variables or command-line arguments.
 
-storageStrategy=minio
-minio.url=http://localhost:9000
-minio.access-key=minioadmin
-minio.secret-key=minioadmin
-minio.bucket=repsy-bucket
+## Usage
 
-spring.datasource.url=jdbc:postgresql://localhost:5432/repsy
-spring.datasource.username=postgres
-spring.datasource.password=postgres
-```
+### Running Locally
 
-### 3. Projeyi Derleme ve Çalıştırma
-```sh
-mvn clean install
+```bash
 mvn spring-boot:run
 ```
-veya Docker ile build:
-```sh
-docker build -t repsy-assignment .
-docker run -p 8080:8080 --env-file .env repsy-assignment
+
+The application will start on the default port (typically 8080). You can access the API endpoints via `http://localhost:8080`.
+
+### Running with Docker
+
+To build and run the application using Docker:
+
+```bash
+docker build -t repsyassignment .
+docker run -p 8080:8080 repsyassignment
 ```
 
-## API Endpoints
+Or use Docker Compose:
 
-### Deployment (Yükleme)
-```http
-POST /api/v1/{packageName}/{version}
-Content-Type: multipart/form-data
-file=[package.rep | meta.json]
-```
-- `package.rep`: Derlenmiş kaynak kodları içeren .zip dosyası (uzantısı .rep)
-- `meta.json`: Paket meta verisi (örnek aşağıda)
-
-#### Örnek meta.json
-```json
-{
-  "name": "mypackage",
-  "version": "1.0.0",
-  "author": "John Doe",
-  "dependencies": [
-    { "package": "even", "version": "3.4.7" },
-    { "package": "math", "version": "4.2.8" }
-  ]
-}
+```bash
+docker-compose up --build
 ```
 
-### Download (İndirme)
-```http
-GET /api/v1/{packageName}/{version}/{fileName}
-```
-- `fileName` olarak `package.rep` veya `meta.json` kullanılabilir.
+## License
 
-## Storage Strategy Seçimi
-- `application.properties` veya ortam değişkeni ile `storageStrategy` değerini `file-system` veya `minio` olarak ayarlayın.
-- MinIO kullanımı için ilgili bağlantı bilgilerini ayarlayın.
-
-## Çoklu Modül Yapısı
-- `storage-filesystem` ve `storage-minio` modülleri bağımsız olarak build edilip Maven repository'ye deploy edilebilir.
-
-## Geliştirici Notları
-- Tüm bağımlılıklar Maven ile otomatik kurulur.
-- Uygulama Docker ile kolayca taşınabilir.
-- Geçersiz isteklerde anlamlı hata mesajları ve uygun HTTP kodları döner.
-
-## Katkı ve Lisans
-MIT Lisansı. Katkılarınızı bekliyoruz!
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
