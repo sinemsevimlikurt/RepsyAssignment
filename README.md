@@ -34,7 +34,7 @@ RepsyAssignment is a Java-based project designed to demonstrate key backend deve
 ### Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/RepsyAssignment.git
+git clone https://github.com/sinemsevimlikurt/RepsyAssignment.git
 cd RepsyAssignment
 ```
 
@@ -56,7 +56,7 @@ Application configuration is managed via the `src/main/resources/application.pro
 mvn spring-boot:run
 ```
 
-The application will start on the default port (typically 8080). You can access the API endpoints via `http://localhost:8080`.
+The application will start on the default port (typically 8081). You can access the API endpoints via `http://localhost:8081`.
 
 ### Running with Docker
 
@@ -64,7 +64,7 @@ To build and run the application using Docker:
 
 ```bash
 docker build -t repsyassignment .
-docker run -p 8080:8080 repsyassignment
+docker run -p 8081:8081 repsyassignment
 ```
 
 Or use Docker Compose:
