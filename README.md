@@ -1,19 +1,8 @@
-# RepsyAssignment
+# Repsy Assignment Project
 
-## Overview
+A mid-level Java project built with Spring Boot and Hibernate for package management.
 
-RepsyAssignment is a Java-based project designed to demonstrate key backend development skills, including RESTful API design, configuration management, and containerization. The project is structured for clarity and maintainability, making it suitable for both learning and production use.
-
-## Features
-
-- RESTful API endpoints
-- Configuration management with `application.properties`
-- Docker and Docker Compose support
-- Maven-based dependency management
-- Environment variable support for flexible deployments
-
-## Technologies Used
-
+## Technology Stack
 - Java 17
 - Spring Boot 3.x
 - Spring Data JPA
